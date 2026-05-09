@@ -3,13 +3,13 @@
 
 #include "tcb.h"
 
-typedef struct cpu{
+typedef struct{
     int id;
     Tcb* tarefa_atual;
     int ligado;
     int ticks_ociosos_acumulados;
     int quantum_restante;
-};
+}Cpu;
 
 
 #endif
