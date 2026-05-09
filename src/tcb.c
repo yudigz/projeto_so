@@ -10,6 +10,6 @@ static  const char* strings_estados[]={
 
 const char* estado_para_string(Estado e){
     if(e < NOVA || e > FINALIZADA)
-        return "Tarefa inexistente";
+        return "Estado inexistente";
     return strings_estados[e];
 }
