@@ -1,5 +1,5 @@
 #ifndef TCB_H
-#define TCH_B
+#define TCB_H
 
 typedef enum{
     NOVA,
