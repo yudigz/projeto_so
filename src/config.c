@@ -82,16 +82,6 @@ int ler_config(const char* caminho, SistemaSimulado* sistema) {
     }
     printf("algoritmo='%s' quantum=%d cpus=%d\n", sistema->algoritmo, sistema->quantum, sistema->qtd_cpus);
 
-     /* Linhas seguintes: uma tarefa por linha */
-    while (fgets(linha, sizeof(linha), arquivo) != NULL) {
-        strip_newline(linha);
-
-        /* Ignora linhas vazias */
-        if (strlen(linha) == 0) continue;
-
-        printf("Linha tarefa: %s\n", linha);
-    }
-
     sistema->tarefas = NULL;
     sistema->qtd_tarefas = 0;
 
