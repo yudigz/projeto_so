@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include "config.h"
 
 
@@ -25,7 +26,14 @@ int ler_config(const char* caminho, SistemaSimulado* sistema) {
         return -1;
     }
     strip_newline(linha);
-    printf("Linha 1 (sistema): %s\n", linha);
+    if(separa_linha_sistema(linha, sistema) != 0) {
+        fclose(arquivo);
+        return -1;
+    }
+    printf("algoritmo='%s' quantum=%d cpus=%d\n",
+       sistema->algoritmo,
+       sistema->quantum,
+       sistema->qtd_cpus);
 
     /* Linhas seguintes: uma tarefa por linha */
     while (fgets(linha, sizeof(linha), arquivo) != NULL) {
@@ -38,5 +46,22 @@ int ler_config(const char* caminho, SistemaSimulado* sistema) {
     }
 
     fclose(arquivo);
+    return 0;
+}
+
+static int separa_linha_sistema(char* linha, SistemaSimulado* sistema) {
+    char* token = strtok(linha, ";");
+    if (token == NULL) { /* linha mal formada */ return -1; }
+    strncpy(sistema->algoritmo, token, sizeof(sistema->algoritmo) - 1);
+    sistema->algoritmo[sizeof(sistema->algoritmo) - 1] = '\0';  /* garante terminador */
+
+    token = strtok(NULL, ";");
+    if (token == NULL) return -1;
+    sistema->quantum = atoi(token);
+
+    token = strtok(NULL, ";");
+    if (token == NULL) return -1;
+    sistema->qtd_cpus = atoi(token);
+
     return 0;
 }

@@ -1,27 +1,22 @@
-CC      = gcc
-CFLAGS  = -Wall -Wextra -g -Iinclude
-SRC_DIR = src
-OBJ_DIR = obj
-BIN     = simulador
+CC=gcc
+CFLAGS=-Wall -Iinclude
 
-SRCS = $(wildcard $(SRC_DIR)/*.c)
-OBJS = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SRCS))
-
-.PHONY: all clean run
+# Pega todos os arquivos .c dentro da pasta src/
+SRC=$(wildcard src/*.c)
+# Define que os .o terão o mesmo nome e caminho dos .c (ficarão em src/)
+OBJ=$(SRC:.c=.o)
+BIN=simulador
 
 all: $(BIN)
 
-$(BIN): $(OBJS)
-	$(CC) $(CFLAGS) -o $@ $^
+# Passo final: linka os .o para criar o executável e apaga os .o em seguida
+$(BIN): $(OBJ)
+	$(CC) $(CFLAGS) $(OBJ) -o $(BIN)
+	@rm -f $(OBJ)
 
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(OBJ_DIR)
+# Passo intermediário: compila cada .c em um .o
+src/%.o: src/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(OBJ_DIR):
-	mkdir -p $(OBJ_DIR)
-
-run: all
-	./$(BIN)
-
 clean:
-	rm -rf $(OBJ_DIR) $(BIN)
+	rm -f $(BIN)
