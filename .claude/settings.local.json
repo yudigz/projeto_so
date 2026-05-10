@@ -1,0 +1,29 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\nicho\\\\projeto_so\" -Recurse -File)",
+      "Bash(Select-Object -Property FullName)",
+      "Bash(Sort-Object FullName)",
+      "Bash(make *)",
+      "PowerShell(Get-Command *)",
+      "PowerShell(where.exe make 2>$null; where.exe mingw32-make 2>$null; where.exe nmake 2>$null; $env:PATH -split \";\")",
+      "PowerShell(& \"C:\\\\Program Files\\\\Git\\\\usr\\\\bin\\\\make.exe\" --version 2>$null; if \\(-not $?\\) { \"make not found in Git\" })",
+      "PowerShell(wsl --status 2>$null; wsl make --version 2>$null)",
+      "PowerShell(wsl -d Ubuntu -- make --version 2>$null)",
+      "PowerShell(wsl -d Ubuntu -- bash -c \"which make || apt list --installed 2>/dev/null | grep make\" 2>&1)",
+      "PowerShell(wsl -d Ubuntu -- bash -c \"ls /usr/bin/make 2>/dev/null || echo 'not found'\" 2>&1)",
+      "PowerShell(winget install *)",
+      "PowerShell($make = \"C:\\\\Program Files \\(x86\\)\\\\GnuWin32\\\\bin\\\\make.exe\"; Set-Location \"C:\\\\Users\\\\nicho\\\\projeto_so\"; & $make 2>&1)",
+      "PowerShell(winget search *)",
+      "PowerShell($env:PATH = \"$env:LOCALAPPDATA\\\\Microsoft\\\\WinGet\\\\Links;\" + $env:PATH; $make = \"C:\\\\Program Files \\(x86\\)\\\\GnuWin32\\\\bin\\\\make.exe\"; Set-Location \"C:\\\\Users\\\\nicho\\\\projeto_so\"; & $make 2>&1)",
+      "PowerShell(mingw32-make *)",
+      "PowerShell(Get-ChildItem *)",
+      "PowerShell(winget list *)",
+      "PowerShell(Get-ChildItem \"C:\\\\\" -Directory -ErrorAction SilentlyContinue | Where-Object { $_.Name -match \"mingw|winlib|gcc\" } | Select-Object FullName)",
+      "PowerShell($env:PATH -split \";\" | Where-Object { $_ -match \"mingw|winlib|gcc|gnu\" })",
+      "PowerShell([System.Environment]::GetEnvironmentVariable\\(\"PATH\", \"Machine\"\\) -split \";\" | Where-Object { $_ -match \"mingw|winlib|gcc|gnu|WinGet\" })",
+      "PowerShell([System.Environment]::GetEnvironmentVariable\\(\"PATH\", \"User\"\\) -split \";\")",
+      "PowerShell($gccPath = \"C:\\\\Users\\\\nicho\\\\AppData\\\\Local\\\\Microsoft\\\\WinGet\\\\Packages\\\\BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe\\\\mingw64\\\\bin\"; $env:PATH = \"$gccPath;\" + $env:PATH; $make = \"C:\\\\Program Files \\(x86\\)\\\\GnuWin32\\\\bin\\\\make.exe\"; Set-Location \"C:\\\\Users\\\\nicho\\\\projeto_so\"; & $make 2>&1)"
+    ]
+  }
+}
