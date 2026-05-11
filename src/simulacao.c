@@ -1,6 +1,6 @@
 #include "simulacao.h"
 #include "snapshot.h"
-#include <stddef.h>
+#include <stdlib.h>
 
 void tick(SistemaSimulado* sistema){
 
