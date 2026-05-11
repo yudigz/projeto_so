@@ -125,8 +125,7 @@ int ler_config(const char* caminho, SistemaSimulado* sistema) {
         if (strlen(linha) == 0) continue;
 
         /* cresce o array em 1 */
-        sistema->tarefas = realloc(sistema->tarefas,
-                                (sistema->qtd_tarefas + 1) * sizeof(Tcb));
+        sistema->tarefas = realloc(sistema->tarefas,(sistema->qtd_tarefas + 1) * sizeof(Tcb));
 
         separa_linha_tarefa(linha, &sistema->tarefas[sistema->qtd_tarefas]);
         sistema->qtd_tarefas++;
@@ -142,6 +141,8 @@ int ler_config(const char* caminho, SistemaSimulado* sistema) {
     fclose(arquivo);
 
     if(validar_config(sistema) != 0){
+        free(sistema->tarefas);
+        sistema->tarefas = NULL;
         return -1;
     }
 
