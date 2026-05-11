@@ -4,6 +4,13 @@
 #include "config.h"
 #include "utils.h"
 
+static void aplicar_dafault(SistemaSimulado* sistema){
+    strncpy(sistema->algoritmo,"srtf", sizeof(sistema->algoritmo) - 1);
+    sistema->algoritmo[sizeof(sistema->algoritmo) - 1] = '\0';
+    sistema->quantum = 3;
+    sistema->qtd_cpus = 2;
+}
+
 static void strip_newline(char* s) {
     size_t len = strlen(s);
     if (len > 0 && s[len-1] == '\n') s[len-1] = '\0';
@@ -62,6 +69,7 @@ static int separa_linha_tarefa(char* linha, Tcb* tcb){
 }
 
 int ler_config(const char* caminho, SistemaSimulado* sistema) {
+    aplicar_dafault(sistema);
     FILE* arquivo = fopen(caminho, "r");
     if (arquivo == NULL) {
         fprintf(stderr, "Erro: nao foi possivel abrir o arquivo '%s'\n", caminho);
