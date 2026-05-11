@@ -1,6 +1,7 @@
 #include "simulacao.h"
 #include "snapshot.h"
 #include <stdlib.h>
+#include <stdio.h>
 
 void tick(SistemaSimulado* sistema){
 
@@ -79,4 +80,20 @@ void tick(SistemaSimulado* sistema){
         sistema->historico = realloc(sistema->historico, sistema->cap_historico * sizeof(Snapshot));
     }
     sistema->historico[sistema->qtd_snapshots++] = snapshot_capturar(sistema);
+}
+
+int simulacao_finalizada(const SistemaSimulado* sistema){
+    for(int i =0; i < sistema->qtd_tarefas; i++){
+        if(sistema->tarefas[i].estado != FINALIZADA) return 0;
+    }
+    return 1;
+}
+
+int avancar(SistemaSimulado* sistema){
+    if(simulacao_finalizada(sistema)){
+        printf("Simulacao ja finalizada no tick: %d.\n", sistema->relogio_global);
+        return 0;
+    }
+    tick(sistema);
+    return 1;
 }
