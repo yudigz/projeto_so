@@ -4,7 +4,7 @@
 #include "config.h"
 #include "utils.h"
 
-static void aplicar_dafault(SistemaSimulado* sistema){
+static void aplicar_default(SistemaSimulado* sistema){
     strncpy(sistema->algoritmo,"srtf", sizeof(sistema->algoritmo) - 1);
     sistema->algoritmo[sizeof(sistema->algoritmo) - 1] = '\0';
     sistema->quantum = 3;
