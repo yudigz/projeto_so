@@ -32,7 +32,7 @@ int priop(SistemaSimulado* sistema, int cpu_id){
                            (e == EXECUTANDO && sistema->tarefas[i].cpu_atual == cpu_id);
         if (!eh_candidata) continue;
 
-        int dur = sistema->tarefas[i].prioridade;
+        int prio = sistema->tarefas[i].prioridade;
 
         if (melhor_idx == -1 || prio > melhor_prio) {
             melhor_idx = i;
