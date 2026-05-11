@@ -11,6 +11,32 @@ static void aplicar_default(SistemaSimulado* sistema){
     sistema->qtd_cpus = 2;
 }
 
+static int validar_config(const SistemaSimulado* sistema){
+    if(sistema->qtd_cpus < 2){
+        fprintf(stderr,"Erro: o sistema precisa de pelo menos 2 CPUs(configurado: %d)\n",sistema->qtd_cpus);
+        return -1;
+    }
+    if(sistema->qtd_tarefas < 1){
+        fprintf(stderr,"Erro: o arquivo de config nao possui nenhuma tarefa\n");
+        return -1;
+    }
+    if(sistema->quantum <= 0){
+        fprintf(stderr,"Erro: o quantum deve ser maior que zero(configurado: %d)\n",sistema->quantum);
+        return -1;
+    }
+    for(int i = 0;i < sistema->qtd_tarefas; i++){
+        if(sistema->tarefas[i].ingresso < 0){
+            fprintf(stderr, "Erro: tarefa %d tem ingresso negativo (%d)\n",sistema->tarefas[i].id,sistema->tarefas[i].ingresso);
+            return -1;
+        }
+    }
+    if(strcmp(sistema->algoritmo, "srtf") != 0 && strcmp(sistema->algoritmo, "priop") != 0){
+        fprintf(stderr, "Erro: algoritmo desconhecido '%s' \n",sistema->algoritmo);
+        return -1;
+    }
+    return 0;
+}
+
 static void strip_newline(char* s) {
     size_t len = strlen(s);
     if (len > 0 && s[len-1] == '\n') s[len-1] = '\0';
@@ -69,7 +95,7 @@ static int separa_linha_tarefa(char* linha, Tcb* tcb){
 }
 
 int ler_config(const char* caminho, SistemaSimulado* sistema) {
-    aplicar_dafault(sistema);
+    aplicar_default(sistema);
     FILE* arquivo = fopen(caminho, "r");
     if (arquivo == NULL) {
         fprintf(stderr, "Erro: nao foi possivel abrir o arquivo '%s'\n", caminho);
@@ -114,5 +140,10 @@ int ler_config(const char* caminho, SistemaSimulado* sistema) {
     }
 
     fclose(arquivo);
+
+    if(validar_config(sistema) != 0){
+        return -1;
+    }
+
     return 0;
 }
