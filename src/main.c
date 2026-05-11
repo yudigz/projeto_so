@@ -1,6 +1,9 @@
 #include "sistema.h"
 #include "config.h"
 
+#include <time.h>
+srand(time(NULL));
+
 int main(void) {
     SistemaSimulado sistema = {0};  /* zera todos os campos */
 

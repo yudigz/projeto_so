@@ -16,6 +16,7 @@ typedef struct{
     Cpu* cpus;
     int qtd_cpus;
     Escalonador escalonador;
+    int houve_sorteio;
 }SistemaSimulado;
 
 #endif
