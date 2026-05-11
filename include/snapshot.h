@@ -4,6 +4,8 @@
 #include "tcb.h"
 #include "cpu.h"
 
+struct SistemaSimulado;
+
 typedef struct{
     int relogio;
     Tcb* tarefas;
@@ -11,5 +13,7 @@ typedef struct{
     Cpu* cpus;
     int qtd_cpus;
 }Snapshot;
+
+Snapshot snapshot_capturar(const struct SistemaSimulado* sistema);
 
 #endif

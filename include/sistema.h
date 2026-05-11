@@ -3,6 +3,7 @@
  
 #include "tcb.h"
 #include "cpu.h"
+#include "snapshot.h"
  
 typedef struct SistemaSimulado {
     int relogio_global;
@@ -15,6 +16,9 @@ typedef struct SistemaSimulado {
     int (*escalonador)(struct SistemaSimulado* sistema, int cpu_id);
     int houve_sorteio;
     int sorteio_tarefa_idx;
+    Snapshot* historico;
+    int qtd_snapshots;
+    int cap_historico;
 } SistemaSimulado;
 
 typedef int (*Escalonador)(SistemaSimulado* sistema, int cpu_id);

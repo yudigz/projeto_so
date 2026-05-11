@@ -1,4 +1,5 @@
 #include "simulacao.h"
+#include "snapshot.h"
 #include <stddef.h>
 
 void tick(SistemaSimulado* sistema){
@@ -72,4 +73,10 @@ void tick(SistemaSimulado* sistema){
     }
 
     sistema->relogio_global++;
+    
+    if(sistema->qtd_snapshots >= sistema->cap_historico){
+        sistema->cap_historico = sistema->cap_historico == 0 ? 16 : sistema->cap_historico * 2;
+        sistema->historico = realloc(sistema->historico, sistema->cap_historico * sizeof(Snapshot));
+    }
+    sistema->historico[sistema->qtd_snapshots++] = snapshot_capturar(sistema);
 }

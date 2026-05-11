@@ -141,6 +141,16 @@ int ler_config(const char* caminho, SistemaSimulado* sistema) {
 
     fclose(arquivo);
 
+    /* aloca e inicializa o array de CPUs */
+    sistema->cpus = malloc(sistema->qtd_cpus * sizeof(Cpu));
+    for (int i =0; i < sistema->qtd_cpus; i++){
+        sistema->cpus[i].id = i;
+        sistema->cpus[i].tarefa_atual = NULL;
+        sistema->cpus[i].ligado = 1;
+        sistema->cpus[i].ticks_ociosos_acumulados = 0;
+        sistema->cpus[i].quantum_restante = 0;
+    }
+
     if(validar_config(sistema) != 0){
         free(sistema->tarefas);
         sistema->tarefas = NULL;
@@ -152,6 +162,10 @@ int ler_config(const char* caminho, SistemaSimulado* sistema) {
         fprintf(stderr, "Erro: escalonador '%s' nao encontrado\n",sistema->algoritmo);
         return -1;
     }
+
+    sistema->historico     = NULL;
+    sistema->qtd_snapshots = 0;
+    sistema->cap_historico = 0;
 
     return 0;
 }
