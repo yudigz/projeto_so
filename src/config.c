@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include "config.h"
 #include "utils.h"
+#include "escalonador.h"
 
 static void aplicar_default(SistemaSimulado* sistema){
     strncpy(sistema->algoritmo,"srtf", sizeof(sistema->algoritmo) - 1);
@@ -143,6 +144,12 @@ int ler_config(const char* caminho, SistemaSimulado* sistema) {
     if(validar_config(sistema) != 0){
         free(sistema->tarefas);
         sistema->tarefas = NULL;
+        return -1;
+    }
+
+    sistema->escalonador = get_escalonador(sistema->algoritmo);
+    if(sistema->escalonador == NULL){
+        fprintf(stderr, "Erro: escalonador '%s' nao encontrado\n",sistema->algoritmo);
         return -1;
     }
 

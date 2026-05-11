@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include "escalonador.h"
+#include <string.h>
 
 static int desempatar(SistemaSimulado* sistema, int idx_a, int idx_b, int cpu_id){
     Tcb* a = &sistema->tarefas[idx_a];
@@ -23,6 +24,12 @@ static int desempatar(SistemaSimulado* sistema, int idx_a, int idx_b, int cpu_id
     sistema->sorteio_tarefa_idx = vencedor;
     return vencedor;
 }
+
+Escalonador get_escalonador(const char* nome){
+    if(strcmp(nome, "srtf") == 0) return srtf;
+    if(strcmp(nome, "priop") == 0) return priop;
+    return NULL;
+  }
 
 int srtf(SistemaSimulado* sistema, int cpu_id) {
     int melhor_idx = -1;
