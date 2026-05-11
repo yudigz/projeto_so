@@ -24,7 +24,7 @@ int srtf(SistemaSimulado* sistema, int cpu_id) {
 
 int priop(SistemaSimulado* sistema, int cpu_id){
     int melhor_idx = -1;
-    int melhor_dur = -1;
+    int melhor_prio = -1;
 
     for (int i = 0; i < sistema->qtd_tarefas; i++) {
         Estado e = sistema->tarefas[i].estado;
