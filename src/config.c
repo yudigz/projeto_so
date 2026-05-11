@@ -2,7 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "config.h"
-
+#include "utils.h"
 
 static void strip_newline(char* s) {
     size_t len = strlen(s);
@@ -15,6 +15,7 @@ static int separa_linha_sistema(char* linha, SistemaSimulado* sistema) {
     if (token == NULL) { /* linha mal formada */ return -1; }
     strncpy(sistema->algoritmo, token, sizeof(sistema->algoritmo) - 1);
     sistema->algoritmo[sizeof(sistema->algoritmo) - 1] = '\0';  /* garante terminador */
+    str_to_lower(sistema->algoritmo);
 
     token = strtok(NULL, ";");
     if (token == NULL) return -1;
