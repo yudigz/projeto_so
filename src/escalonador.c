@@ -1,6 +1,29 @@
 #include <stdlib.h>
 #include "escalonador.h"
 
+static int desempatar(SistemaSimulado* sistema, int idx_a, int idx_b, int cpu_id){
+    Tcb* a = &sistema->tarefas[idx_a];
+    Tcb* b = &sistema->tarefas[idx_b];
+
+    //tarefa que esta executando permanece
+    if(a->estado == EXECUTANDO && a->cpu_atual == cpu_id) return idx_a;
+    if(b->estado == EXECUTANDO && b->cpu_atual == cpu_id) return idx_b;
+
+    //menor ingresso
+    if(a->ingresso != b->ingresso)
+        return (a->ingresso < b->ingresso) ? idx_a : idx_b;
+
+    //menor duracao original
+    if(a->duracao != b->duracao)
+        return (a->duracao < b->duracao) ? idx_a : idx_b;
+
+    //sorteio
+    int vencedor = (rand() % 2 == 0) ? idx_a : idx_b;
+    sistema->houve_sorteio = 1;
+    sistema->sorteio_tarefa_idx = vencedor;
+    return vencedor;
+}
+
 int srtf(SistemaSimulado* sistema, int cpu_id) {
     int melhor_idx = -1;
     int melhor_dur = -1;  /* -1 = ainda não achei nenhuma */
@@ -39,31 +62,10 @@ int priop(SistemaSimulado* sistema, int cpu_id){
         if (melhor_idx == -1 || prio > melhor_prio) {
             melhor_idx = i;
             melhor_prio = prio;
-        } else if (dur == melhor_prio){
+        } else if (prio == melhor_prio){
             melhor_idx = desempatar(sistema, melhor_idx, i, cpu_id);
         }
     }
 
     return melhor_idx;
-}
-
-static int desempatar(SistemaSimulado* sistema, int idx_a, int idx_b, int cpu_id){
-    Tcb* a = &sistema->tarefas[idx_a];
-    Tcb* b = &sistema->tarefas[idx_b];
-
-    //tarefa que esta executando permanece
-    if(a->estado == EXECUTANDO && a->cpu_atual = cpu_id) return idx_a;
-    if(b->estado == EXECUTANDO && b->cpu_atual = cpu_id) return idx_b;
-
-    //menor ingresso
-    if(a->ingresso != b->ingresso)
-        return (a->ingresso < b->ingresso) ? idx_a : idx_b;
-
-    //menor duracao original
-    if(a->duracao != b->duracao)
-        return (a->duracao < b->duracao) ? idx_a : idx_b;
-
-    //sorteio
-    sistema->houve_sorteio = 1;
-    return (rand() % 2 == 0) ? idx_a : idx_b;
 }
