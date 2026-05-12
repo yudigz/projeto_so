@@ -27,3 +27,20 @@ Snapshot snapshot_capturar(const SistemaSimulado* sistema){
     }
     return s;
 }
+
+void snapshot_restaurar(SistemaSimulado* sistema, const Snapshot* s){
+    sistema->relogio_global = s->relogio;
+
+    memcpy(sistema->tarefas, s->tarefas, s->qtd_tarefas * sizeof(Tcb));
+    memcpy(sistema->cpus, s->cpus, s->qtd_cpus * sizeof(Cpu));
+
+    /* recoloca a tarefa_atual p/ apontar ao array do sistema, nao pro de snapshot(copia separada) */
+    for(int i =0; i < s->qtd_cpus; i++){
+        if(s->cpus[i].tarefa_atual != NULL){
+            int idx = s->cpus[i].tarefa_atual - s->tarefas;
+            sistema->cpus[i].tarefa_atual = &sistema->tarefas[idx];
+        }else{
+            sistema->cpus[i].tarefa_atual = NULL;
+        }
+    }
+}

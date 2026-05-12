@@ -95,5 +95,54 @@ int avancar(SistemaSimulado* sistema){
         return 0;
     }
     tick(sistema);
+    sistema->idx_snapshot_atual = sistema->qtd_snapshots - 1;
     return 1;
+}
+
+int retroceder(SistemaSimulado* sistema){
+    if(sistema->idx_snapshot_atual <=0){
+        printf("Nao ha snapshot anterior para retroceder.\n");
+        return 0;
+    }
+    sistema->idx_snapshot_atual--;
+    snapshot_restaurar(sistema, &sistema->historico[sistema->idx_snapshot_atual]);
+    return 1;
+}
+
+void modificar_tarefa(SistemaSimulado* sistema, int tarefa_id, int novo_estado, int nova_prioridade, int nova_duracao_restante){
+    Tcb* t = NULL;
+    /* pga a tarefa pelo id*/
+    for(int i =0; i < sistema->qtd_tarefas; i++){
+        if(sistema->tarefas[i].id == tarefa_id){
+            t = &sistema->tarefas[i];
+            break;
+        }
+    } 
+
+    if(t == NULL){
+        printf("Erro: tarefa com id %d nao encontrada", tarefa_id);
+        return;
+    }
+
+    if (novo_estado != -1) {
+        Estado e_anterior = t->estado;
+        t->estado = (Estado)novo_estado;
+
+        /* se a tarefa saiu de EXECUTANDO, libera a CPU */
+        if (e_anterior == EXECUTANDO && t->estado != EXECUTANDO) {
+            int cpu_id = t->cpu_atual;
+            if (cpu_id >= 0) {
+                sistema->cpus[cpu_id].tarefa_atual    = NULL;
+                sistema->cpus[cpu_id].quantum_restante = 0;
+            }
+            t->cpu_atual = -1;
+        }
+    }
+    if(nova_prioridade != -1){
+        t->prioridade = nova_prioridade;
+    }
+    if(nova_duracao_restante != -1){
+        t->duracao_restante = nova_duracao_restante;
+    }
+
 }

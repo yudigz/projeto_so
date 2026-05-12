@@ -19,6 +19,7 @@ typedef struct SistemaSimulado {
     Snapshot* historico;
     int qtd_snapshots;
     int cap_historico;
+    int idx_snapshot_atual; 
 } SistemaSimulado;
 
 typedef int (*Escalonador)(SistemaSimulado* sistema, int cpu_id);

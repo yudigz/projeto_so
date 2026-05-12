@@ -166,6 +166,7 @@ int ler_config(const char* caminho, SistemaSimulado* sistema) {
     sistema->historico     = NULL;
     sistema->qtd_snapshots = 0;
     sistema->cap_historico = 0;
+    sistema->idx_snapshot_atual = -1;
 
     return 0;
 }

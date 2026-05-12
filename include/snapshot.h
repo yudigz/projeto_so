@@ -16,4 +16,6 @@ typedef struct{
 
 Snapshot snapshot_capturar(const struct SistemaSimulado* sistema);
 
+void snapshot_restaurar(struct SistemaSimulado* sistema, const Snapshot* s);
+
 #endif
