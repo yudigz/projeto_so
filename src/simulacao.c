@@ -146,3 +146,32 @@ void modificar_tarefa(SistemaSimulado* sistema, int tarefa_id, int novo_estado, 
     }
 
 }
+
+void executar_completo(SistemaSimulado* sistema) {
+    while (!simulacao_finalizada(sistema)){
+        tick(sistema);
+    }
+}
+
+void inspecionar_sistema(const SistemaSimulado* sistema){
+    printf("=== Tick %d ===\n", sistema->relogio_global);
+
+    printf("--- Tarefas ---\n");
+    for(int i=0; i < sistema->qtd_tarefas; i++){
+        Tcb* t = &sistema->tarefas[i];
+        printf("T%d | estado=%-12s | prio=%d | dur_rest=%d cpu=%d\n",
+            t->id, estado_para_string(t->estado), t->prioridade, t->duracao_restante, t->cpu_atual);
+    }
+
+    printf("\n-- CPUs --\n");
+    for (int i = 0; i < sistema->qtd_cpus; i++) {
+        Cpu* c = &sistema->cpus[i];
+        if (c->tarefa_atual != NULL)
+            printf("CPU%d | ligada | executando T%d | quantum_rest=%d\n",
+                   c->id, c->tarefa_atual->id, c->quantum_restante);
+        else
+            printf("CPU%d | ociosa | ticks_ociosos=%d\n",
+                   c->id, c->ticks_ociosos_acumulados);
+    }
+    printf("\n");
+}
