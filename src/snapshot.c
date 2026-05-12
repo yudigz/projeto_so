@@ -9,6 +9,8 @@ Snapshot snapshot_capturar(const SistemaSimulado* sistema){
     s.relogio = sistema->relogio_global;
     s.qtd_tarefas = sistema->qtd_tarefas;
     s.qtd_cpus = sistema->qtd_cpus;
+    s.houve_sorteio = sistema->houve_sorteio;
+    s.sorteio_tarefa_idx = sistema->sorteio_tarefa_idx;
 
     /* copia profunda das tarefas*/
     s.tarefas = malloc(sistema->qtd_tarefas * sizeof(Tcb));

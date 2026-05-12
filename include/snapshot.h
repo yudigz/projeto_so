@@ -12,6 +12,8 @@ typedef struct{
     int qtd_tarefas;
     Cpu* cpus;
     int qtd_cpus;
+    int houve_sorteio;
+    int sorteio_tarefa_idx;
 }Snapshot;
 
 Snapshot snapshot_capturar(const struct SistemaSimulado* sistema);
