@@ -6,4 +6,6 @@
 
 void gantt_imprimir(const SistemaSimulado* sistema);
 
+void gantt_legenda(const SistemaSimulado* sistema);
+
 #endif

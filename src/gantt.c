@@ -63,3 +63,19 @@ void gantt_imprimir(const SistemaSimulado* sistema){
     }
     printf("\n");
 }
+
+void gantt_legenda(const SistemaSimulado* sistema) {
+    printf("--- Legenda ---\n");
+    printf(" ▼  chegada da tarefa\n");
+    printf(" ■  termino da tarefa\n");
+    printf(" ⚀  desempate por sorteio\n");
+    printf("\x1b[48;2;30;30;30m   " ANSI_RESET " tarefa suspensa\n");
+    printf("    ausencia de cor = tarefa pronta (aguardando CPU)\n\n");
+
+    printf("Cores das tarefas:\n");
+    for (int i = 0; i < sistema->qtd_tarefas; i++) {
+        Tcb* t = &sistema->tarefas[i];
+        printf("\x1b[48;2;%d;%d;%dm   " ANSI_RESET " T%d\n", t->cor.r, t->cor.g, t->cor.b, t->id);
+    }
+    printf("\n");
+}

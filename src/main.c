@@ -13,6 +13,7 @@ int main(void) {
 
     executar_completo(&sistema);
     printf("\n");
+    gantt_legenda(&sistema);
     gantt_imprimir(&sistema);
     return 0;
 }
