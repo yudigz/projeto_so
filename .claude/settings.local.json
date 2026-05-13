@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(make clean *)",
+      "Bash(make)",
+      "Bash(wsl *)",
+      "PowerShell(wsl -d Ubuntu -- bash -c \"cd ~/projeto_so && make 2>&1\")"
+    ]
+  }
+}

@@ -1,0 +1,328 @@
+#include "tui.h"
+#include "simulacao.h"
+#include "gantt.h"
+#include <stdio.h>
+#include <string.h>
+
+#define ANSI_RESET "\x1b[0m"
+
+/* UTF-8 box drawing characters */
+#define TL "\xe2\x94\x8c"   /* ┌  U+250C */
+#define TR "\xe2\x94\x90"   /* ┐  U+2510 */
+#define BL "\xe2\x94\x94"   /* └  U+2514 */
+#define BR "\xe2\x94\x98"   /* ┘  U+2518 */
+#define HL "\xe2\x94\x80"   /* ─  U+2500 */
+#define VL "\xe2\x94\x82"   /* │  U+2502 */
+#define ML "\xe2\x94\x9c"   /* ├  U+251C */
+#define MR "\xe2\x94\xa4"   /* ┤  U+2524 */
+
+#define W   70      /* total visual width */
+#define IW  68      /* inner width */
+#define LC  34      /* left column width  (two-col section) */
+#define RC  33      /* right column width (two-col section) */
+
+/* ── box helpers ─────────────────────────────────────── */
+
+static void linha_topo(void) {
+    int i;
+    printf(TL);
+    for (i = 0; i < IW; i++) printf(HL);
+    printf(TR "\n");
+}
+
+static void linha_sep(void) {
+    int i;
+    printf(ML);
+    for (i = 0; i < IW; i++) printf(HL);
+    printf(MR "\n");
+}
+
+static void linha_base(void) {
+    int i;
+    printf(BL);
+    for (i = 0; i < IW; i++) printf(HL);
+    printf(BR "\n");
+}
+
+/* left-aligned plain text line inside the box */
+static void linha_plain(const char* s) {
+    int len = (int)strlen(s);
+    int pad = IW - 1 - len;
+    int i;
+    if (pad < 0) pad = 0;
+    printf(VL " %s", s);
+    for (i = 0; i < pad; i++) putchar(' ');
+    printf(VL "\n");
+}
+
+/* centered plain text line inside the box */
+static void linha_centrada(const char* s) {
+    int len = (int)strlen(s);
+    int total = IW - len;
+    int pl, pr, i;
+    if (total < 0) total = 0;
+    pl = total / 2;
+    pr = total - pl;
+    printf(VL);
+    for (i = 0; i < pl; i++) putchar(' ');
+    printf("%s", s);
+    for (i = 0; i < pr; i++) putchar(' ');
+    printf(VL "\n");
+}
+
+/* ── helpers ─────────────────────────────────────────── */
+
+static int max_id_digs(const SistemaSimulado* s) {
+    int i, max = 0;
+    for (i = 0; i < s->qtd_tarefas; i++)
+        if (s->tarefas[i].id > max) max = s->tarefas[i].id;
+    return max >= 100 ? 3 : max >= 10 ? 2 : 1;
+}
+
+/* ── secao 1: cabecalho ──────────────────────────────── */
+
+static void secao_cabecalho(const SistemaSimulado* s) {
+    char buf[128];
+    linha_centrada("SIMULADOR DE SO MULTITAREFA PREEMPTIVO");
+    snprintf(buf, sizeof(buf), "Algoritmo: %-6s  Quantum: %d  Tick: %d",
+             s->algoritmo, s->quantum, s->relogio_global);
+    linha_centrada(buf);
+}
+
+/* ── secao 2: gantt ──────────────────────────────────── */
+
+static void secao_gantt(const SistemaSimulado* s) {
+    int n_ticks   = s->idx_snapshot_atual + 1;
+    int n_tarefas = s->qtd_tarefas;
+    int ti, tick, p, digs, pfx, avail, max_t, start, visible, row_vis, rpad;
+
+    if (n_ticks <= 0) {
+        linha_plain("Gantt: nenhum tick executado ainda.");
+        return;
+    }
+
+    digs  = max_id_digs(s);
+    pfx   = digs + 4;          /* visual width of row prefix (after VL): " T{id} |" */
+    avail = IW - pfx;
+    max_t = avail / 3;
+    if (max_t < 1) max_t = 1;
+
+    start   = (n_ticks > max_t) ? n_ticks - max_t : 0;
+    visible = n_ticks - start;
+    row_vis = pfx + visible * 3;
+    rpad    = IW - row_vis;
+    if (rpad < 0) rpad = 0;
+
+    linha_plain("Gantt:");
+
+    /* task rows — highest index on top */
+    for (ti = n_tarefas - 1; ti >= 0; ti--) {
+        int id = s->tarefas[ti].id;
+        printf(VL " T%-*d |", digs, id);
+
+        for (tick = start; tick < n_ticks; tick++) {
+            const Snapshot* sv = &s->historico[tick];
+            const Snapshot* sa = tick > 0 ? &s->historico[tick - 1] : NULL;
+            const Tcb* t  = &sv->tarefas[ti];
+            const Tcb* ta = sa ? &sa->tarefas[ti] : NULL;
+
+            int chegou   = ta == NULL
+                           ? (t->estado == PRONTA || t->estado == EXECUTANDO)
+                           : (ta->estado == NOVA && t->estado != NOVA);
+            int terminou = ta != NULL
+                           && ta->estado != FINALIZADA
+                           && t->estado == FINALIZADA;
+
+            if (chegou) {
+                printf(" \xe2\x96\xbc ");              /* ▼ */
+            } else if (terminou) {
+                printf(" \xe2\x96\xa0 ");              /* ■ */
+            } else if (t->estado == EXECUTANDO) {
+                printf("\x1b[48;2;%d;%d;%dm %d " ANSI_RESET,
+                       s->tarefas[ti].cor.r,
+                       s->tarefas[ti].cor.g,
+                       s->tarefas[ti].cor.b,
+                       t->cpu_atual);
+            } else if (t->estado == SUSPENSA) {
+                printf("\x1b[48;2;30;30;30m   " ANSI_RESET);
+            } else {
+                printf("   ");
+            }
+        }
+        for (p = 0; p < rpad; p++) putchar(' ');
+        printf(VL "\n");
+    }
+
+    /* sorteio row */
+    printf(VL " %*s|", digs + 2, "");
+    for (tick = start; tick < n_ticks; tick++) {
+        if (s->historico[tick].houve_sorteio)
+            printf(" \xe2\x9a\x80 ");                  /* ⚀ */
+        else
+            printf("   ");
+    }
+    for (p = 0; p < rpad; p++) putchar(' ');
+    printf(VL "\n");
+
+    /* eixo X: prefix same width as task prefix (pfx = digs+4) */
+    printf(VL " %*s  ", digs + 1, "");
+    for (tick = start; tick < n_ticks; tick++)
+        printf("%2d ", tick + 1);
+    for (p = 0; p < rpad; p++) putchar(' ');
+    printf(VL "\n");
+}
+
+/* ── secao 3: tarefas + CPUs ─────────────────────────── */
+
+static void secao_tarefas_cpus(const SistemaSimulado* s) {
+    int n_t  = s->qtd_tarefas;
+    int n_c  = s->qtd_cpus;
+    int rows = n_t > n_c ? n_t : n_c;
+    int digs = max_id_digs(s);
+    int row, p;
+
+    /* sub-header */
+    printf(VL " Tarefas");
+    for (p = 8; p < LC; p++) putchar(' ');
+    printf(VL " CPUs");
+    for (p = 5; p < RC; p++) putchar(' ');
+    printf(VL "\n");
+
+    for (row = 0; row < rows; row++) {
+        printf(VL);
+
+        /* left: task */
+        if (row < n_t) {
+            const Tcb* t = &s->tarefas[row];
+            char plain[64];
+            int plen, colored_vis, left_vis, lpad;
+            plen = snprintf(plain, sizeof(plain), " %-10s p=%-3d d=%-5d",
+                            estado_para_string(t->estado),
+                            t->prioridade,
+                            t->duracao_restante);
+            colored_vis = digs + 3;   /* visual width: " T{id} " */
+            left_vis    = colored_vis + plen;
+            lpad        = LC - left_vis;
+            if (lpad < 0) lpad = 0;
+
+            if (t->estado == SUSPENSA)
+                printf("\x1b[48;2;30;30;30m T%-*d " ANSI_RESET, digs, t->id);
+            else
+                printf("\x1b[48;2;%d;%d;%dm T%-*d " ANSI_RESET,
+                       t->cor.r, t->cor.g, t->cor.b, digs, t->id);
+            printf("%s", plain);
+            for (p = 0; p < lpad; p++) putchar(' ');
+        } else {
+            for (p = 0; p < LC; p++) putchar(' ');
+        }
+
+        printf(VL);
+
+        /* right: CPU */
+        if (row < n_c) {
+            const Cpu* c = &s->cpus[row];
+            char cbuf[64];
+            int clen, rpad;
+            if (c->tarefa_atual != NULL) {
+                clen = snprintf(cbuf, sizeof(cbuf), " CPU%d T%d q=%-3d",
+                                c->id, c->tarefa_atual->id, c->quantum_restante);
+            } else {
+                clen = snprintf(cbuf, sizeof(cbuf), " CPU%d ocioso idle=%-4d",
+                                c->id, c->ticks_ociosos_acumulados);
+            }
+            printf("%s", cbuf);
+            rpad = RC - clen;
+            if (rpad < 0) rpad = 0;
+            for (p = 0; p < rpad; p++) putchar(' ');
+        } else {
+            for (p = 0; p < RC; p++) putchar(' ');
+        }
+
+        printf(VL "\n");
+    }
+}
+
+/* ── secao 4: rodape ─────────────────────────────────── */
+
+static void secao_rodape(void) {
+    linha_plain("n=avancar  b=retroceder  m=modificar  i=inspecionar  q=sair");
+}
+
+/* ── funcoes publicas ────────────────────────────────── */
+
+void tui_desenhar(const SistemaSimulado* s) {
+    printf("\x1b[2J\x1b[H");   /* limpa tela e posiciona cursor no topo */
+
+    linha_topo();
+    secao_cabecalho(s);
+    linha_sep();
+    secao_gantt(s);
+    linha_sep();
+    secao_tarefas_cpus(s);
+    linha_sep();
+    secao_rodape();
+    linha_base();
+}
+
+/* sub-menu inline (nao limpa tela) */
+static void menu_modificar(SistemaSimulado* s) {
+    int id, campo, valor;
+    int e = -1, p = -1, d = -1;
+    int i;
+
+    printf("IDs disponiveis:");
+    for (i = 0; i < s->qtd_tarefas; i++) printf(" %d", s->tarefas[i].id);
+    printf("\nID da tarefa: ");
+    if (scanf("%d", &id) != 1) { while (getchar() != '\n'); return; }
+
+    printf("Campo: 1=estado  2=prioridade  3=duracao_restante\nOpcao: ");
+    if (scanf("%d", &campo) != 1) { while (getchar() != '\n'); return; }
+
+    if (campo == 1)
+        printf("  0=Nova  1=Pronta  2=Executando  3=Suspensa  4=Finalizada\n");
+    printf("Novo valor: ");
+    if (scanf("%d", &valor) != 1) { while (getchar() != '\n'); return; }
+    while (getchar() != '\n');
+
+    if      (campo == 1) e = valor;
+    else if (campo == 2) p = valor;
+    else if (campo == 3) d = valor;
+    else { printf("Campo invalido.\n"); return; }
+
+    modificar_tarefa(s, id, e, p, d);
+}
+
+void tui_loop(SistemaSimulado* s) {
+    char cmd[8];
+
+    printf("\x1b[?1049h");   /* entra no alternate screen buffer (sem scrollback) */
+    fflush(stdout);
+    tui_desenhar(s);
+
+    for (;;) {
+        printf("[tick %d] > ", s->relogio_global);
+        fflush(stdout);
+        if (fgets(cmd, sizeof(cmd), stdin) == NULL) break;
+        cmd[strcspn(cmd, "\n")] = '\0';
+
+        if (strcmp(cmd, "n") == 0) {
+            if (avancar(s)) tui_desenhar(s);
+        } else if (strcmp(cmd, "b") == 0) {
+            if (retroceder(s)) tui_desenhar(s);
+        } else if (strcmp(cmd, "m") == 0) {
+            menu_modificar(s);
+            tui_desenhar(s);
+        } else if (strcmp(cmd, "i") == 0) {
+            inspecionar_sistema(s);
+        } else if (strcmp(cmd, "q") == 0) {
+            break;
+        } else {
+            printf("Comando invalido. Use: n b m i q\n");
+        }
+    }
+
+    printf("\x1b[?1049l");   /* sai do alternate screen, restaura terminal normal */
+    fflush(stdout);
+    gantt_exportar_svg(s, "gantt.svg");
+    printf("SVG exportado para gantt.svg\n");
+}

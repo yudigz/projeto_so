@@ -94,6 +94,7 @@ int avancar(SistemaSimulado* sistema){
         printf("Simulacao ja finalizada no tick: %d.\n", sistema->relogio_global);
         return 0;
     }
+    sistema->qtd_snapshots = sistema->idx_snapshot_atual + 1;
     tick(sistema);
     sistema->idx_snapshot_atual = sistema->qtd_snapshots - 1;
     return 1;
@@ -151,6 +152,7 @@ void executar_completo(SistemaSimulado* sistema) {
     while (!simulacao_finalizada(sistema)){
         tick(sistema);
     }
+    sistema->idx_snapshot_atual = sistema->qtd_snapshots - 1;
 }
 
 void inspecionar_sistema(const SistemaSimulado* sistema){
