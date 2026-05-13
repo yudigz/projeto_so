@@ -22,7 +22,6 @@ typedef struct{
     int prioridade;
     Estado estado;
     int cpu_atual;
-    //struct ListaEventos* eventos 
 }Tcb;
 
 const char* estado_para_string(Estado e);
