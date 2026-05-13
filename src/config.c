@@ -31,10 +31,9 @@ static int validar_config(const SistemaSimulado* sistema){
             return -1;
         }
     }
-    if(strcmp(sistema->algoritmo, "srtf") != 0 && strcmp(sistema->algoritmo, "priop") != 0){
-        fprintf(stderr, "Erro: algoritmo desconhecido '%s' \n",sistema->algoritmo);
-        return -1;
-    }
+    /* a validacao do nome do algoritmo acontece em get_escalonador():
+       se nao for embutido, tenta carregar o plugin. Aqui nao bloqueamos
+       nomes desconhecidos para nao impedir plugins externos. */
     return 0;
 }
 
