@@ -1,3 +1,15 @@
+/*
+ * config.c — leitura e validação do arquivo de configuração
+ *
+ * Lê o arquivo de texto no formato:
+ *   algoritmo;quantum;qtd_cpus
+ *   id;cor_hex;ingresso;duracao;prioridade;eventos
+ *
+ * Aplica valores padrão antes da leitura e valida os parâmetros depois.
+ * A validação do algoritmo não rejeita nomes desconhecidos aqui — isso
+ * fica a cargo de get_escalonador(), que tenta carregar um plugin externo.
+ */
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -132,10 +144,10 @@ int ler_config(const char* caminho, SistemaSimulado* sistema) {
     }
 
     for (int i = 0; i < sistema->qtd_tarefas; i++) {
-    Tcb* t = &sistema->tarefas[i];
-    printf("Tarefa %d | cor=(%d,%d,%d) | ingresso=%d | duracao=%d | prio=%d\n",
-           t->id, t->cor.r, t->cor.g, t->cor.b,
-           t->ingresso, t->duracao, t->prioridade);
+        Tcb* t = &sistema->tarefas[i];
+        printf("Tarefa %d | cor=(%d,%d,%d) | ingresso=%d | duracao=%d | prio=%d\n",
+               t->id, t->cor.r, t->cor.g, t->cor.b,
+               t->ingresso, t->duracao, t->prioridade);
     }
 
     fclose(arquivo);

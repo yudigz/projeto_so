@@ -1,6 +1,13 @@
+/*
+ * tcb.c — Task Control Block: funções auxiliares de tarefas
+ *
+ * Por enquanto só contém a conversão do enum Estado para string legível,
+ * usada na exibição do TUI e na inspeção do sistema.
+ */
+
 #include "tcb.h"
 
-static  const char* strings_estados[]={
+static const char* strings_estados[]={
     "Nova",
     "Pronta",
     "Executando",

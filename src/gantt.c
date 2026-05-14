@@ -1,3 +1,13 @@
+/*
+ * gantt.c — visualização do gráfico de Gantt
+ *
+ * Três funções públicas:
+ *   gantt_imprimir()     — imprime o Gantt no terminal com cores ANSI
+ *   gantt_legenda()      — imprime a legenda dos símbolos no terminal
+ *   gantt_exportar_svg() — gera o arquivo gantt.svg com o gráfico completo,
+ *                          linhas de CPU, linha de sorteio e legenda embutida
+ */
+
 #include "gantt.h"
 #include <stdio.h>
 
@@ -13,7 +23,7 @@ void gantt_imprimir(const SistemaSimulado* sistema) {
         return;
     }
 
-    /* task rows: highest ID on top, lowest ID nearest X axis */
+    /* maior ID no topo, menor ID mais proximo do eixo X */
     for (int ti = n_tarefas - 1; ti >= 0; ti--) {
         int id = sistema->tarefas[ti].id;
         printf("T%d |", id);
@@ -45,7 +55,6 @@ void gantt_imprimir(const SistemaSimulado* sistema) {
         printf("\n");
     }
 
-    /* CPU rows: show which task ran (or OFF when idle) per tick */
     for (int ci = 0; ci < n_cpus; ci++) {
         printf("C%d |", ci);
         for (int tick = 0; tick < n_ticks; tick++) {
@@ -63,7 +72,7 @@ void gantt_imprimir(const SistemaSimulado* sistema) {
         printf("\n");
     }
 
-    /* lottery row */
+    /* linha de eventos globais (sorteio) */
     printf("   |");
     for (int tick = 0; tick < n_ticks; tick++) {
         const Snapshot* s = &sistema->historico[tick];
@@ -74,7 +83,7 @@ void gantt_imprimir(const SistemaSimulado* sistema) {
     }
     printf("\n");
 
-    /* X axis */
+    /* eixo X */
     printf("    ");
     for (int tick = 0; tick < n_ticks; tick++)
         printf("%2d ", tick + 1);
@@ -112,18 +121,15 @@ void gantt_exportar_svg(const SistemaSimulado* sistema, const char* caminho) {
     int cw = 30, ch = 30;
     int ml = 60, mt = 20;
 
-    /* y offsets for each chart section */
     int y_tarefas = mt;
     int y_cpus    = y_tarefas + n_tarefas * ch + 10;
     int y_loteria = y_cpus    + n_cpus    * ch + 10;
     int y_xaxis   = y_loteria + ch + 10;
 
-    /* legend sizing: 6 fixed items + one per task */
     int leg_item_h = 22;
     int y_legenda  = y_xaxis + 20;
     int leg_h      = 20 + (6 + n_tarefas) * leg_item_h + 10;
 
-    /* minimum width so legend text fits even on short simulations */
     int largura_gantt = ml + n_ticks * cw;
     int largura = largura_gantt > 420 ? largura_gantt : 420;
     int altura  = y_legenda + leg_h;
@@ -132,7 +138,7 @@ void gantt_exportar_svg(const SistemaSimulado* sistema, const char* caminho) {
             largura, altura);
     fprintf(f, "<rect width=\"%d\" height=\"%d\" fill=\"white\"/>\n", largura, altura);
 
-    /* ── task rows ─────────────────────────────────────────── */
+    /* linhas das tarefas */
     for (int ti = n_tarefas - 1; ti >= 0; ti--) {
         int linha_visual = (n_tarefas - 1 - ti);
         int y = y_tarefas + linha_visual * ch;
@@ -154,7 +160,6 @@ void gantt_exportar_svg(const SistemaSimulado* sistema, const char* caminho) {
             int terminou = t_ant && t_ant->estado != FINALIZADA
                            && t->estado == FINALIZADA;
 
-            /* background fill */
             if (t->estado == EXECUTANDO) {
                 fprintf(f, "<rect x=\"%d\" y=\"%d\" width=\"%d\" height=\"%d\""
                            " fill=\"#%02X%02X%02X\"/>\n",
@@ -165,7 +170,6 @@ void gantt_exportar_svg(const SistemaSimulado* sistema, const char* caminho) {
                         x, y, cw, ch);
             }
 
-            /* foreground symbol (arrives/terminates take priority over cpu number) */
             if (chegou) {
                 const char* cor_sym = (t->estado == EXECUTANDO) ? "white" : "black";
                 fprintf(f, "<text x=\"%d\" y=\"%d\" font-size=\"14\" fill=\"%s\""
@@ -183,7 +187,7 @@ void gantt_exportar_svg(const SistemaSimulado* sistema, const char* caminho) {
         }
     }
 
-    /* ── CPU rows ───────────────────────────────────────────── */
+    /* linhas das CPUs */
     for (int ci = 0; ci < n_cpus; ci++) {
         int y = y_cpus + ci * ch;
         fprintf(f, "<text x=\"%d\" y=\"%d\" font-size=\"12\" text-anchor=\"end\">C%d</text>\n",
@@ -213,20 +217,19 @@ void gantt_exportar_svg(const SistemaSimulado* sistema, const char* caminho) {
         }
     }
 
-    /* ── lottery row ────────────────────────────────────────── */
+    /* linha de sorteio */
     fprintf(f, "<text x=\"%d\" y=\"%d\" font-size=\"11\" text-anchor=\"end\">sort</text>\n",
             ml - 4, y_loteria + ch/2 + 4);
     for (int tick = 0; tick < n_ticks; tick++) {
         int x = ml + tick * cw;
         if (sistema->historico[tick].houve_sorteio) {
-            /* U+2680 DIE FACE-1 = &#9856; */
             fprintf(f, "<text x=\"%d\" y=\"%d\" font-size=\"16\""
                        " text-anchor=\"middle\">&#9856;</text>\n",
                     x + cw/2, y_loteria + ch/2 + 6);
         }
     }
 
-    /* ── vertical grid lines + X axis labels ────────────────── */
+    /* linhas de grade verticais e numeracao do eixo X */
     for (int tick = 0; tick < n_ticks; tick++) {
         int x = ml + tick * cw;
         fprintf(f, "<line x1=\"%d\" y1=\"%d\" x2=\"%d\" y2=\"%d\""
@@ -236,7 +239,7 @@ void gantt_exportar_svg(const SistemaSimulado* sistema, const char* caminho) {
                 x + cw/2, y_xaxis, tick + 1);
     }
 
-    /* ── section separator lines ────────────────────────────── */
+    /* linhas separadoras entre secoes */
     fprintf(f, "<line x1=\"%d\" y1=\"%d\" x2=\"%d\" y2=\"%d\""
                " stroke=\"#999\" stroke-width=\"1\"/>\n",
             ml - 55, y_cpus - 5, largura, y_cpus - 5);
@@ -244,7 +247,7 @@ void gantt_exportar_svg(const SistemaSimulado* sistema, const char* caminho) {
                " stroke=\"#999\" stroke-width=\"1\"/>\n",
             ml - 55, y_loteria - 5, largura, y_loteria - 5);
 
-    /* ── legend ─────────────────────────────────────────────── */
+    /* legenda */
     int lx = ml;
     int ly = y_legenda;
 
@@ -252,32 +255,27 @@ void gantt_exportar_svg(const SistemaSimulado* sistema, const char* caminho) {
             lx, ly);
     ly += leg_item_h;
 
-    /* arrival ▼ = &#9660; */
     fprintf(f, "<text x=\"%d\" y=\"%d\" font-size=\"14\">&#9660;</text>\n", lx, ly);
     fprintf(f, "<text x=\"%d\" y=\"%d\" font-size=\"12\">  chegada da tarefa</text>\n",
             lx + 18, ly);
     ly += leg_item_h;
 
-    /* completion ■ = &#9632; */
     fprintf(f, "<text x=\"%d\" y=\"%d\" font-size=\"14\">&#9632;</text>\n", lx, ly);
     fprintf(f, "<text x=\"%d\" y=\"%d\" font-size=\"12\">  termino da tarefa</text>\n",
             lx + 18, ly);
     ly += leg_item_h;
 
-    /* lottery ⚀ = &#9856; */
     fprintf(f, "<text x=\"%d\" y=\"%d\" font-size=\"14\">&#9856;</text>\n", lx, ly);
     fprintf(f, "<text x=\"%d\" y=\"%d\" font-size=\"12\">  desempate por sorteio</text>\n",
             lx + 18, ly);
     ly += leg_item_h;
 
-    /* suspended = black */
     fprintf(f, "<rect x=\"%d\" y=\"%d\" width=\"14\" height=\"14\" fill=\"#000000\"/>\n",
             lx, ly - 12);
     fprintf(f, "<text x=\"%d\" y=\"%d\" font-size=\"12\">  tarefa suspensa</text>\n",
             lx + 18, ly);
     ly += leg_item_h;
 
-    /* ready = white */
     fprintf(f, "<rect x=\"%d\" y=\"%d\" width=\"14\" height=\"14\""
                " fill=\"white\" stroke=\"#999\" stroke-width=\"1\"/>\n",
             lx, ly - 12);
@@ -285,14 +283,12 @@ void gantt_exportar_svg(const SistemaSimulado* sistema, const char* caminho) {
             lx + 18, ly);
     ly += leg_item_h;
 
-    /* CPU off = red */
     fprintf(f, "<rect x=\"%d\" y=\"%d\" width=\"14\" height=\"14\" fill=\"#b41e1e\"/>\n",
             lx, ly - 12);
     fprintf(f, "<text x=\"%d\" y=\"%d\" font-size=\"12\">  processador desligado</text>\n",
             lx + 18, ly);
     ly += leg_item_h;
 
-    /* per-task colors */
     for (int i = 0; i < n_tarefas; i++) {
         const Tcb* t = &sistema->tarefas[i];
         fprintf(f, "<rect x=\"%d\" y=\"%d\" width=\"14\" height=\"14\""

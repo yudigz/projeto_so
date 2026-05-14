@@ -1,3 +1,12 @@
+/*
+ * utils.c — funções utilitárias gerais
+ *
+ * Contém helpers usados em diferentes partes do projeto. Por enquanto
+ * só tem a conversão de string para minúsculas, usada na leitura do
+ * arquivo de configuração para tratar nomes de algoritmo sem distinção
+ * de maiúsculas/minúsculas.
+ */
+
 #include "utils.h"
 #include <string.h>
 

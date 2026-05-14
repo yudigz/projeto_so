@@ -1,3 +1,13 @@
+/*
+ * escalonador.c — algoritmos de escalonamento e carregamento de plugins
+ *
+ * Implementa os algoritmos embutidos (SRTF e PRIOP) e a função
+ * get_escalonador(), que primeiro tenta retornar um algoritmo embutido e,
+ * se não encontrar, tenta carregar um plugin externo via dlopen/dlsym.
+ * O plugin deve ser um arquivo .so em escalonadores/lib{nome}.so com uma
+ * função de mesmo nome que o algoritmo.
+ */
+
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -73,7 +83,7 @@ Escalonador get_escalonador(const char* nome){
 
 int srtf(SistemaSimulado* sistema, int cpu_id) {
     int melhor_idx = -1;
-    int melhor_dur = -1;  /* -1 = ainda não achei nenhuma */
+    int melhor_dur = -1;
 
     for (int i = 0; i < sistema->qtd_tarefas; i++) {
         Estado e = sistema->tarefas[i].estado;

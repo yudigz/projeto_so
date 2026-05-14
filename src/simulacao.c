@@ -1,3 +1,12 @@
+/*
+ * simulacao.c — núcleo da simulação
+ *
+ * Controla o relógio global tick a tick. Cada tick processa chegadas de
+ * tarefas, conclusões, expiração de quantum e escalonamento. Também
+ * implementa avanço, retrocesso, modificação manual de tarefas e
+ * inspeção do estado atual do sistema.
+ */
+
 #include "simulacao.h"
 #include "snapshot.h"
 #include <stdlib.h>
@@ -14,7 +23,7 @@ void tick(SistemaSimulado* sistema){
     /* verifica finalizada*/
     for(int i =0; i < sistema->qtd_tarefas; i++){
         if(sistema->tarefas[i].estado != EXECUTANDO) continue;
-        
+
         sistema->tarefas[i].duracao_restante--;
 
         if(sistema->tarefas[i].duracao_restante == 0){
@@ -38,7 +47,7 @@ void tick(SistemaSimulado* sistema){
 
         if(sistema->cpus[i].quantum_restante <= 0){
             Tcb* t = sistema->cpus[i].tarefa_atual;
-            
+
             /* tarefa volta pra fila de prontos*/
             t->estado = PRONTA;
             t->cpu_atual = -1;
@@ -63,7 +72,7 @@ void tick(SistemaSimulado* sistema){
             sistema->cpus[i].ligado = 0;
             sistema->cpus[i].ticks_ociosos_acumulados++;
         } else{
-            /* atrinui a tarefa escolhida a esta CPU*/
+            /* atribui a tarefa escolhida a esta CPU*/
             sistema->cpus[i].ligado = 1;
             sistema->cpus[i].tarefa_atual = &sistema->tarefas[idx];
             sistema->cpus[i].quantum_restante = sistema->quantum;
@@ -74,7 +83,7 @@ void tick(SistemaSimulado* sistema){
     }
 
     sistema->relogio_global++;
-    
+
     if(sistema->qtd_snapshots >= sistema->cap_historico){
         sistema->cap_historico = sistema->cap_historico == 0 ? 16 : sistema->cap_historico * 2;
         sistema->historico = realloc(sistema->historico, sistema->cap_historico * sizeof(Snapshot));
@@ -112,13 +121,13 @@ int retroceder(SistemaSimulado* sistema){
 
 void modificar_tarefa(SistemaSimulado* sistema, int tarefa_id, int novo_estado, int nova_prioridade, int nova_duracao_restante){
     Tcb* t = NULL;
-    /* pga a tarefa pelo id*/
+    /* pega a tarefa pelo id*/
     for(int i =0; i < sistema->qtd_tarefas; i++){
         if(sistema->tarefas[i].id == tarefa_id){
             t = &sistema->tarefas[i];
             break;
         }
-    } 
+    }
 
     if(t == NULL){
         printf("Erro: tarefa com id %d nao encontrada", tarefa_id);
@@ -145,7 +154,6 @@ void modificar_tarefa(SistemaSimulado* sistema, int tarefa_id, int novo_estado, 
     if(nova_duracao_restante != -1){
         t->duracao_restante = nova_duracao_restante;
     }
-
 }
 
 void executar_completo(SistemaSimulado* sistema) {
