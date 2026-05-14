@@ -1,13 +1,13 @@
 /*
- * config.c — leitura e validação do arquivo de configuração
- *
- * Lê o arquivo de texto no formato:
- *   algoritmo;quantum;qtd_cpus
- *   id;cor_hex;ingresso;duracao;prioridade;eventos
- *
- * Aplica valores padrão antes da leitura e valida os parâmetros depois.
- * A validação do algoritmo não rejeita nomes desconhecidos aqui — isso
- * fica a cargo de get_escalonador(), que tenta carregar um plugin externo.
+config.c — leitura e validação do arquivo de configuração
+
+Lê o arquivo de texto no formato:
+  algoritmo;quantum;qtd_cpus
+  id;cor_hex;ingresso;duracao;prioridade;eventos
+
+Aplica valores padrão antes da leitura e valida os parâmetros depois.
+A validação do algoritmo não rejeita nomes desconhecidos aqui — isso
+fica a cargo de get_escalonador(), que tenta carregar um plugin externo.
  */
 
 #include <stdio.h>

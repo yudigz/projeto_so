@@ -1,10 +1,10 @@
 /*
- * simulacao.c — núcleo da simulação
- *
- * Controla o relógio global tick a tick. Cada tick processa chegadas de
- * tarefas, conclusões, expiração de quantum e escalonamento. Também
- * implementa avanço, retrocesso, modificação manual de tarefas e
- * inspeção do estado atual do sistema.
+simulacao.c — núcleo da simulação
+
+Controla o relógio global tick a tick. Cada tick processa chegadas de
+tarefas, conclusões, expiração de quantum e escalonamento. Também
+implementa avanço, retrocesso, modificação manual de tarefas e
+inspeção do estado atual do sistema.
  */
 
 #include "simulacao.h"

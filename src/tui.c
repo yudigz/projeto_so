@@ -1,10 +1,10 @@
 /*
- * tui.c — interface interativa de terminal (modo passo-a-passo)
- *
- * Desenha o estado do simulador numa caixa de texto com quatro seções:
- * cabeçalho, Gantt, tabela de tarefas/CPUs e legenda. O loop principal
- * lê comandos do usuário (n, b, m, i, q) para avançar, retroceder,
- * modificar tarefas, inspecionar e sair.
+tui.c — interface interativa de terminal (modo passo-a-passo)
+
+Desenha o estado do simulador numa caixa de texto com quatro seções:
+cabeçalho, Gantt, tabela de tarefas/CPUs e legenda. O loop principal
+lê comandos do usuário (n, b, m, i, q) para avançar, retroceder,
+modificar tarefas, inspecionar e sair.
  */
 
 #include "tui.h"

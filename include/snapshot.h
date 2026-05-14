@@ -1,9 +1,9 @@
 /*
- * snapshot.h — definição do Snapshot e assinaturas de captura/restauração
- *
- * Um Snapshot é uma cópia completa do estado do sistema em um dado tick.
- * Usado pelo mecanismo de retrocesso para restaurar qualquer ponto anterior
- * da simulação sem precisar reexecutar desde o início.
+snapshot.h — definição do Snapshot e assinaturas de captura/restauração
+
+Um Snapshot é uma cópia completa do estado do sistema em um dado tick.
+Usado pelo mecanismo de retrocesso para restaurar qualquer ponto anterior
+da simulação sem precisar reexecutar desde o início.
  */
 
 #ifndef SNAPSHOT_H

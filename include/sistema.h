@@ -1,9 +1,9 @@
 /*
- * sistema.h — estrutura principal do sistema simulado
- *
- * Agrega todas as informações do sistema em execução: relógio global,
- * arrays de tarefas e CPUs, ponteiro para o escalonador ativo, histórico
- * de snapshots para avanço/retrocesso e flags de sorteio.
+sistema.h — estrutura principal do sistema simulado
+
+Agrega todas as informações do sistema em execução: relógio global,
+arrays de tarefas e CPUs, ponteiro para o escalonador ativo, histórico
+de snapshots para avanço/retrocesso e flags de sorteio.
  */
 
 #ifndef SISTEMA_H

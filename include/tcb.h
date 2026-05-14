@@ -1,9 +1,9 @@
 /*
- * tcb.h — definição do Task Control Block e do ciclo de vida das tarefas
- *
- * O TCB é a estrutura central de cada tarefa: guarda identificador, cor,
- * tempos de ingresso e duração, prioridade, estado atual e CPU em uso.
- * O enum Estado representa o ciclo de vida completo dentro do simulador.
+tcb.h — definição do Task Control Block e do ciclo de vida das tarefas
+
+O TCB é a estrutura central de cada tarefa: guarda identificador, cor,
+tempos de ingresso e duração, prioridade, estado atual e CPU em uso.
+O enum Estado representa o ciclo de vida completo dentro do simulador.
  */
 
 #ifndef TCB_H

@@ -1,11 +1,11 @@
 /*
- * simulacao.h — motor de simulação e controle de avanço/retrocesso
- *
- * tick() avança o relógio um passo: transiciona estados, chama o
- * escalonador e salva um snapshot. avancar()/retroceder() navegam
- * pelo histórico sem recalcular. modificar_tarefa() permite alterar
- * um TCB em tempo de execução. executar_completo() roda até o fim.
- * inspecionar_sistema() despeja o estado atual no stdout.
+simulacao.h — motor de simulação e controle de avanço/retrocesso
+
+tick() avança o relógio um passo: transiciona estados, chama o
+escalonador e salva um snapshot. avancar()/retroceder() navegam
+pelo histórico sem recalcular. modificar_tarefa() permite alterar
+um TCB em tempo de execução. executar_completo() roda até o fim.
+inspecionar_sistema() despeja o estado atual no stdout.
  */
 
 #ifndef SIMULACAO_H

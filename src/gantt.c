@@ -1,11 +1,11 @@
 /*
- * gantt.c — visualização do gráfico de Gantt
- *
- * Três funções públicas:
- *   gantt_imprimir()     — imprime o Gantt no terminal com cores ANSI
- *   gantt_legenda()      — imprime a legenda dos símbolos no terminal
- *   gantt_exportar_svg() — gera o arquivo gantt.svg com o gráfico completo,
- *                          linhas de CPU, linha de sorteio e legenda embutida
+gantt.c — visualização do gráfico de Gantt
+
+Três funções públicas:
+  gantt_imprimir()     — imprime o Gantt no terminal com cores ANSI
+  gantt_legenda()      — imprime a legenda dos símbolos no terminal
+  gantt_exportar_svg() — gera o arquivo gantt.svg com o gráfico completo,
+                         linhas de CPU, linha de sorteio e legenda embutida
  */
 
 #include "gantt.h"
@@ -115,27 +115,26 @@ void gantt_exportar_svg(const SistemaSimulado* sistema, const char* caminho) {
         return;
     }
 
-    int n_ticks   = sistema->qtd_snapshots;
+    int n_ticks = sistema->qtd_snapshots;
     int n_tarefas = sistema->qtd_tarefas;
-    int n_cpus    = sistema->qtd_cpus;
+    int n_cpus = sistema->qtd_cpus;
     int cw = 30, ch = 30;
     int ml = 60, mt = 20;
 
     int y_tarefas = mt;
-    int y_cpus    = y_tarefas + n_tarefas * ch + 10;
-    int y_loteria = y_cpus    + n_cpus    * ch + 10;
-    int y_xaxis   = y_loteria + ch + 10;
+    int y_cpus = y_tarefas + n_tarefas * ch + 10;
+    int y_loteria = y_cpus + n_cpus * ch + 10;
+    int y_xaxis = y_loteria + ch + 10;
 
     int leg_item_h = 22;
-    int y_legenda  = y_xaxis + 20;
-    int leg_h      = 20 + (6 + n_tarefas) * leg_item_h + 10;
+    int y_legenda = y_xaxis + 20;
+    int leg_h = 20 + (6 + n_tarefas) * leg_item_h + 10;
 
     int largura_gantt = ml + n_ticks * cw;
     int largura = largura_gantt > 420 ? largura_gantt : 420;
-    int altura  = y_legenda + leg_h;
+    int altura = y_legenda + leg_h;
 
-    fprintf(f, "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"%d\" height=\"%d\">\n",
-            largura, altura);
+    fprintf(f, "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"%d\" height=\"%d\">\n", largura, altura);
     fprintf(f, "<rect width=\"%d\" height=\"%d\" fill=\"white\"/>\n", largura, altura);
 
     /* linhas das tarefas */
@@ -148,13 +147,13 @@ void gantt_exportar_svg(const SistemaSimulado* sistema, const char* caminho) {
                 ml - 4, y + ch/2 + 4, id);
 
         for (int tick = 0; tick < n_ticks; tick++) {
-            const Snapshot* s     = &sistema->historico[tick];
+            const Snapshot* s = &sistema->historico[tick];
             const Snapshot* s_ant = tick > 0 ? &sistema->historico[tick-1] : NULL;
-            const Tcb* t     = &s->tarefas[ti];
+            const Tcb* t = &s->tarefas[ti];
             const Tcb* t_ant = s_ant ? &s_ant->tarefas[ti] : NULL;
             int x = ml + tick * cw;
 
-            int chegou   = t_ant == NULL
+            int chegou = t_ant == NULL
                            ? (t->estado == PRONTA || t->estado == EXECUTANDO)
                            : (t_ant->estado == NOVA && t->estado != NOVA);
             int terminou = t_ant && t_ant->estado != FINALIZADA

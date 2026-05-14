@@ -1,9 +1,9 @@
 /*
- * main.c — ponto de entrada do simulador
- *
- * Lê o arquivo de configuração, pergunta o modo de execução e dispara a
- * simulação. No modo completo imprime o Gantt no terminal e exporta o SVG.
- * No modo passo-a-passo entrega o controle para o TUI interativo.
+main.c — ponto de entrada do simulador
+
+Lê o arquivo de configuração, pergunta o modo de execução e dispara a
+simulação. No modo completo imprime o Gantt no terminal e exporta o SVG.
+No modo passo-a-passo entrega o controle para o TUI interativo.
  */
 
 #include <stdio.h>
