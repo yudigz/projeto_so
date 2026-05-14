@@ -43,11 +43,11 @@ static int desempatar(SistemaSimulado* sistema, int idx_a, int idx_b, int cpu_id
 }
 
 Escalonador get_escalonador(const char* nome){
-    /* --- algoritmos embutidos: retorna direto sem precisar de arquivo --- */
+    /* algoritmos embutidos: retorna direto sem precisar de arquivo*/
     if(strcmp(nome, "srtf") == 0)  return srtf;
     if(strcmp(nome, "priop") == 0) return priop;
 
-    /* --- plugin externo: tenta carregar ./escalonadores/lib{nome}.so --- */
+    /* plugin externo: tenta carregar ./escalonadores/lib{nome}.so*/
     char caminho[256];
     snprintf(caminho, sizeof(caminho), "./escalonadores/lib%s.so", nome);
 
@@ -64,9 +64,9 @@ Escalonador get_escalonador(const char* nome){
         return NULL;
     }
 
-    /* limpa estado de erro antes de chamar dlsym (boa pratica: dlsym pode
-       retornar NULL legitimamente se o simbolo valer NULL, entao a unica
-       forma confiavel de detectar erro eh checar dlerror() apos a chamada) */
+    /* limpa estado de erro antes de chamar dlsym, ele pode
+       retornar NULL se o simbolo valer NULL, entao a unica
+       forma boa de detectar erro eh checar dlerror() apos a chamada) */
     dlerror();
     Escalonador fn = (Escalonador) dlsym(handle_dl, nome);
     const char* erro = dlerror();

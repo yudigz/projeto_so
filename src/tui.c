@@ -5,6 +5,15 @@ Desenha o estado do simulador numa caixa de texto com quatro seções:
 cabeçalho, Gantt, tabela de tarefas/CPUs e legenda. O loop principal
 lê comandos do usuário (n, b, m, i, q) para avançar, retroceder,
 modificar tarefas, inspecionar e sair.
+
+  printf("\x1b[48;2;180;30;30mOFF" ANSI_RESET);
+           ↑    ↑  ↑            ↑
+          ESC  48=fundo  2=modo RGB  R;G;B
+
+48 = cor de fundo (foreground seria 38)
+2 = modo RGB verdadeiro (24-bit)
+180;30;30 = vermelho escuro (R=180, G=30, B=30)
+ANSI_RESET = \x1b[0m → apaga toda formatação
  */
 
 #include "tui.h"
@@ -16,14 +25,14 @@ modificar tarefas, inspecionar e sair.
 #define ANSI_RESET "\x1b[0m"
 
 /* caracteres de desenho de caixa em UTF-8 */
-#define TL "\xe2\x94\x8c"   /* ┌  U+250C */
-#define TR "\xe2\x94\x90"   /* ┐  U+2510 */
-#define BL "\xe2\x94\x94"   /* └  U+2514 */
-#define BR "\xe2\x94\x98"   /* ┘  U+2518 */
-#define HL "\xe2\x94\x80"   /* ─  U+2500 */
-#define VL "\xe2\x94\x82"   /* │  U+2502 */
-#define ML "\xe2\x94\x9c"   /* ├  U+251C */
-#define MR "\xe2\x94\xa4"   /* ┤  U+2524 */
+#define TL "\xe2\x94\x8c"   /* ┌   */
+#define TR "\xe2\x94\x90"   /* ┐   */
+#define BL "\xe2\x94\x94"   /* └   */
+#define BR "\xe2\x94\x98"   /* ┘   */
+#define HL "\xe2\x94\x80"   /* ─   */
+#define VL "\xe2\x94\x82"   /* │   */
+#define ML "\xe2\x94\x9c"   /* ├   */
+#define MR "\xe2\x94\xa4"   /* ┤   */
 
 #define W   70      /* largura visual total */
 #define IW  68      /* largura interna */

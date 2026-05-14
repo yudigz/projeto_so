@@ -1,11 +1,6 @@
 /*
 rr.c — algoritmo de escalonamento Round Robin
 
-Cada tarefa recebe a CPU por no maximo um quantum. Quando o quantum
-expira, a tarefa volta para a fila de prontas e a proxima na ordem circular
-e escolhida. O controle do quantum em si ja e feito por simulacao.c — o RR
-so precisa decidir QUEM e o proximo.
-
 Problema de estado: quando o escalonador e chamado, a tarefa que acabou de
 ter seu quantum expirado ja esta de volta como PRONTA (cpu_atual == -1).
 Nao e possivel saber quem acabou de rodar olhando so para o estado atual.

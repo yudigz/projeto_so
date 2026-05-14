@@ -2,8 +2,8 @@
 gantt.c — visualização do gráfico de Gantt
 
 Três funções públicas:
-  gantt_imprimir()     — imprime o Gantt no terminal com cores ANSI
-  gantt_legenda()      — imprime a legenda dos símbolos no terminal
+  gantt_imprimir() — imprime o Gantt no terminal com cores ANSI
+  gantt_legenda() — imprime a legenda dos símbolos no terminal
   gantt_exportar_svg() — gera o arquivo gantt.svg com o gráfico completo,
                          linhas de CPU, linha de sorteio e legenda embutida
  */
@@ -14,9 +14,9 @@ Três funções públicas:
 #define ANSI_RESET "\x1b[0m"
 
 void gantt_imprimir(const SistemaSimulado* sistema) {
-    int n_ticks   = sistema->idx_snapshot_atual + 1;
+    int n_ticks = sistema->idx_snapshot_atual + 1;
     int n_tarefas = sistema->qtd_tarefas;
-    int n_cpus    = sistema->qtd_cpus;
+    int n_cpus = sistema->qtd_cpus;
 
     if (n_ticks <= 0) {
         printf("Nenhum tick executado ainda.\n");
@@ -29,12 +29,12 @@ void gantt_imprimir(const SistemaSimulado* sistema) {
         printf("T%d |", id);
 
         for (int tick = 0; tick < n_ticks; tick++) {
-            const Snapshot* s     = &sistema->historico[tick];
+            const Snapshot* s = &sistema->historico[tick];
             const Snapshot* s_ant = tick > 0 ? &sistema->historico[tick-1] : NULL;
-            const Tcb* t     = &s->tarefas[ti];
+            const Tcb* t = &s->tarefas[ti];
             const Tcb* t_ant = s_ant ? &s_ant->tarefas[ti] : NULL;
 
-            int chegou   = t_ant == NULL
+            int chegou = t_ant == NULL
                            ? (t->estado == PRONTA || t->estado == EXECUTANDO)
                            : (t_ant->estado == NOVA && t->estado != NOVA);
             int terminou = t_ant && t_ant->estado != FINALIZADA && t->estado == FINALIZADA;

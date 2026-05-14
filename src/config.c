@@ -82,8 +82,8 @@ static int separa_linha_tarefa(char* linha, Tcb* tcb){
     if (token == NULL) return -1;
     unsigned long hex = strtol(token, NULL, 16);
     tcb->cor.r = (hex >> 16) & 0xFF;
-    tcb->cor.g = (hex >> 8)  & 0xFF;
-    tcb->cor.b =  hex        & 0xFF;
+    tcb->cor.g = (hex >> 8) & 0xFF;
+    tcb->cor.b =  hex & 0xFF;
 
     token = strtok(NULL, ";");
     if (token == NULL) return -1;
@@ -174,7 +174,7 @@ int ler_config(const char* caminho, SistemaSimulado* sistema) {
         return -1;
     }
 
-    sistema->historico     = NULL;
+    sistema->historico = NULL;
     sistema->qtd_snapshots = 0;
     sistema->cap_historico = 0;
     sistema->idx_snapshot_atual = -1;
