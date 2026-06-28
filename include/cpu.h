@@ -1,3 +1,11 @@
+/*
+cpu.h — definição da estrutura de CPU
+
+Representa um processador do sistema simulado. Guarda a tarefa em
+execução no momento, o estado ligado/desligado, o quantum restante
+e a contagem acumulada de ticks em que ficou ocioso.
+ */
+
 #ifndef CPU_H
 #define CPU_H
 

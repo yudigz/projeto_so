@@ -1,3 +1,12 @@
+/*
+snapshot.c — captura e restauração do estado do sistema
+
+A cada tick é tirada uma "foto" completa do sistema (tarefas + CPUs).
+Isso permite retroceder a simulação restaurando qualquer estado anterior.
+Os ponteiros de tarefa_atual dentro das CPUs precisam ser reajustados
+depois de copiar, pois apontam para arrays diferentes (snapshot vs sistema).
+ */
+
 #include "snapshot.h"
 #include "sistema.h"
 

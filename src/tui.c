@@ -1,3 +1,12 @@
+/*
+tui.c — interface interativa de terminal (modo passo-a-passo)
+
+Desenha o estado do simulador numa caixa de texto com quatro seções:
+cabeçalho, Gantt, tabela de tarefas/CPUs e legenda. O loop principal
+lê comandos do usuário (n, b, m, i, q) para avançar, retroceder,
+modificar tarefas, inspecionar e sair.
+ */
+
 #include "tui.h"
 #include "simulacao.h"
 #include "gantt.h"
@@ -6,7 +15,7 @@
 
 #define ANSI_RESET "\x1b[0m"
 
-/* UTF-8 box drawing characters */
+/* caracteres de desenho de caixa em UTF-8 */
 #define TL "\xe2\x94\x8c"   /* ┌  U+250C */
 #define TR "\xe2\x94\x90"   /* ┐  U+2510 */
 #define BL "\xe2\x94\x94"   /* └  U+2514 */
@@ -16,12 +25,12 @@
 #define ML "\xe2\x94\x9c"   /* ├  U+251C */
 #define MR "\xe2\x94\xa4"   /* ┤  U+2524 */
 
-#define W   70      /* total visual width */
-#define IW  68      /* inner width */
-#define LC  34      /* left column width  (two-col section) */
-#define RC  33      /* right column width (two-col section) */
+#define W   70      /* largura visual total */
+#define IW  68      /* largura interna */
+#define LC  34      /* largura da coluna esquerda (secoes de duas colunas) */
+#define RC  33      /* largura da coluna direita  (secoes de duas colunas) */
 
-/* ── box helpers ─────────────────────────────────────── */
+/* ── helpers de desenho de caixa ─────────────────────── */
 
 static void linha_topo(void) {
     int i;
@@ -44,7 +53,6 @@ static void linha_base(void) {
     printf(BR "\n");
 }
 
-/* left-aligned plain text line inside the box */
 static void linha_plain(const char* s) {
     int len = (int)strlen(s);
     int pad = IW - 1 - len;
@@ -55,7 +63,17 @@ static void linha_plain(const char* s) {
     printf(VL "\n");
 }
 
-/* centered plain text line inside the box */
+/* igual a linha_plain mas recebe largura visual explícita — necessário
+   quando a string tem caracteres UTF-8 multibyte (símbolo = 1 coluna, 3 bytes) */
+static void linha_vis(const char* s, int vis) {
+    int pad = IW - 1 - vis;
+    int i;
+    if (pad < 0) pad = 0;
+    printf(VL " %s", s);
+    for (i = 0; i < pad; i++) putchar(' ');
+    printf(VL "\n");
+}
+
 static void linha_centrada(const char* s) {
     int len = (int)strlen(s);
     int total = IW - len;
@@ -70,7 +88,7 @@ static void linha_centrada(const char* s) {
     printf(VL "\n");
 }
 
-/* ── helpers ─────────────────────────────────────────── */
+/* ── auxiliares ──────────────────────────────────────── */
 
 static int max_id_digs(const SistemaSimulado* s) {
     int i, max = 0;
@@ -94,6 +112,7 @@ static void secao_cabecalho(const SistemaSimulado* s) {
 static void secao_gantt(const SistemaSimulado* s) {
     int n_ticks   = s->idx_snapshot_atual + 1;
     int n_tarefas = s->qtd_tarefas;
+    int n_cpus    = s->qtd_cpus;
     int ti, tick, p, digs, pfx, avail, max_t, start, visible, row_vis, rpad;
 
     if (n_ticks <= 0) {
@@ -102,7 +121,7 @@ static void secao_gantt(const SistemaSimulado* s) {
     }
 
     digs  = max_id_digs(s);
-    pfx   = digs + 4;          /* visual width of row prefix (after VL): " T{id} |" */
+    pfx   = digs + 4;
     avail = IW - pfx;
     max_t = avail / 3;
     if (max_t < 1) max_t = 1;
@@ -115,7 +134,7 @@ static void secao_gantt(const SistemaSimulado* s) {
 
     linha_plain("Gantt:");
 
-    /* task rows — highest index on top */
+    /* tarefas: maior ID no topo */
     for (ti = n_tarefas - 1; ti >= 0; ti--) {
         int id = s->tarefas[ti].id;
         printf(VL " T%-*d |", digs, id);
@@ -144,7 +163,7 @@ static void secao_gantt(const SistemaSimulado* s) {
                        s->tarefas[ti].cor.b,
                        t->cpu_atual);
             } else if (t->estado == SUSPENSA) {
-                printf("\x1b[48;2;30;30;30m   " ANSI_RESET);
+                printf("\x1b[48;2;0;0;0m   " ANSI_RESET);
             } else {
                 printf("   ");
             }
@@ -153,7 +172,26 @@ static void secao_gantt(const SistemaSimulado* s) {
         printf(VL "\n");
     }
 
-    /* sorteio row */
+    /* linhas das CPUs: bloco colorido quando executando, OFF vermelho quando ociosa */
+    for (int ci = 0; ci < n_cpus; ci++) {
+        printf(VL " C%-*d |", digs, ci);
+        for (tick = start; tick < n_ticks; tick++) {
+            const Snapshot* sv = &s->historico[tick];
+            const Cpu* c = &sv->cpus[ci];
+            if (c->tarefa_atual != NULL) {
+                printf("\x1b[48;2;%d;%d;%dm   " ANSI_RESET,
+                       c->tarefa_atual->cor.r,
+                       c->tarefa_atual->cor.g,
+                       c->tarefa_atual->cor.b);
+            } else {
+                printf("\x1b[48;2;180;30;30mOFF" ANSI_RESET);
+            }
+        }
+        for (p = 0; p < rpad; p++) putchar(' ');
+        printf(VL "\n");
+    }
+
+    /* linha de sorteio */
     printf(VL " %*s|", digs + 2, "");
     for (tick = start; tick < n_ticks; tick++) {
         if (s->historico[tick].houve_sorteio)
@@ -164,7 +202,7 @@ static void secao_gantt(const SistemaSimulado* s) {
     for (p = 0; p < rpad; p++) putchar(' ');
     printf(VL "\n");
 
-    /* eixo X: prefix same width as task prefix (pfx = digs+4) */
+    /* eixo X */
     printf(VL " %*s  ", digs + 1, "");
     for (tick = start; tick < n_ticks; tick++)
         printf("%2d ", tick + 1);
@@ -172,7 +210,49 @@ static void secao_gantt(const SistemaSimulado* s) {
     printf(VL "\n");
 }
 
-/* ── secao 3: tarefas + CPUs ─────────────────────────── */
+/* ── secao 3: legenda ────────────────────────────────── */
+
+static void secao_legenda(const SistemaSimulado* s) {
+    int i, pad;
+
+    linha_plain("Legenda:");
+
+    /* cada símbolo UTF-8 ocupa 1 coluna visual mas 3 bytes no strlen,
+       por isso usamos linha_vis com a largura visual correta */
+    linha_vis("  \xE2\x96\xBC  chegada da tarefa",   22);
+    linha_vis("  \xE2\x96\xA0  termino da tarefa",   22);
+    linha_vis("  \xE2\x9A\x80  desempate por sorteio", 26);
+
+    printf(VL " \x1b[48;2;0;0;0m   " ANSI_RESET "  tarefa suspensa");
+    pad = IW - (1 + 3 + 2 + 16);
+    for (i = 0; i < pad; i++) putchar(' ');
+    printf(VL "\n");
+
+    printf(VL " \x1b[48;2;180;30;30mOFF" ANSI_RESET "  processador desligado");
+    pad = IW - (1 + 3 + 2 + 22);
+    for (i = 0; i < pad; i++) putchar(' ');
+    printf(VL "\n");
+
+    linha_plain("     ausencia de cor = tarefa pronta (aguardando CPU)");
+
+    /* amostras de cor de cada tarefa, cabe quantas couberem na linha */
+    printf(VL " Cores: ");
+    int pos = 8;
+    for (i = 0; i < s->qtd_tarefas; i++) {
+        const Tcb* t = &s->tarefas[i];
+        int id_digs = t->id >= 100 ? 3 : t->id >= 10 ? 2 : 1;
+        int needed = 3 + 1 + 1 + id_digs + 1;
+        if (pos + needed > IW - 1) break;
+        printf("\x1b[48;2;%d;%d;%dm   " ANSI_RESET " T%d ",
+               t->cor.r, t->cor.g, t->cor.b, t->id);
+        pos += needed;
+    }
+    pad = IW - pos;
+    for (i = 0; i < pad; i++) putchar(' ');
+    printf(VL "\n");
+}
+
+/* ── secao 4: tarefas + CPUs ─────────────────────────── */
 
 static void secao_tarefas_cpus(const SistemaSimulado* s) {
     int n_t  = s->qtd_tarefas;
@@ -181,7 +261,6 @@ static void secao_tarefas_cpus(const SistemaSimulado* s) {
     int digs = max_id_digs(s);
     int row, p;
 
-    /* sub-header */
     printf(VL " Tarefas");
     for (p = 8; p < LC; p++) putchar(' ');
     printf(VL " CPUs");
@@ -191,7 +270,7 @@ static void secao_tarefas_cpus(const SistemaSimulado* s) {
     for (row = 0; row < rows; row++) {
         printf(VL);
 
-        /* left: task */
+        /* coluna esquerda: tarefa */
         if (row < n_t) {
             const Tcb* t = &s->tarefas[row];
             char plain[64];
@@ -200,13 +279,13 @@ static void secao_tarefas_cpus(const SistemaSimulado* s) {
                             estado_para_string(t->estado),
                             t->prioridade,
                             t->duracao_restante);
-            colored_vis = digs + 3;   /* visual width: " T{id} " */
+            colored_vis = digs + 3;
             left_vis    = colored_vis + plen;
             lpad        = LC - left_vis;
             if (lpad < 0) lpad = 0;
 
             if (t->estado == SUSPENSA)
-                printf("\x1b[48;2;30;30;30m T%-*d " ANSI_RESET, digs, t->id);
+                printf("\x1b[48;2;0;0;0m T%-*d " ANSI_RESET, digs, t->id);
             else
                 printf("\x1b[48;2;%d;%d;%dm T%-*d " ANSI_RESET,
                        t->cor.r, t->cor.g, t->cor.b, digs, t->id);
@@ -218,7 +297,7 @@ static void secao_tarefas_cpus(const SistemaSimulado* s) {
 
         printf(VL);
 
-        /* right: CPU */
+        /* coluna direita: CPU */
         if (row < n_c) {
             const Cpu* c = &s->cpus[row];
             char cbuf[64];
@@ -242,7 +321,7 @@ static void secao_tarefas_cpus(const SistemaSimulado* s) {
     }
 }
 
-/* ── secao 4: rodape ─────────────────────────────────── */
+/* ── secao 5: rodape ─────────────────────────────────── */
 
 static void secao_rodape(void) {
     linha_plain("n=avancar  b=retroceder  m=modificar  i=inspecionar  q=sair");
@@ -259,6 +338,8 @@ void tui_desenhar(const SistemaSimulado* s) {
     secao_gantt(s);
     linha_sep();
     secao_tarefas_cpus(s);
+    linha_sep();
+    secao_legenda(s);
     linha_sep();
     secao_rodape();
     linha_base();
